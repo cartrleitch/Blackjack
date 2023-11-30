@@ -13,10 +13,9 @@ using namespace std::this_thread;
 
 // todo: Ace can be 1 or 11 (automate choice to some extent) 
 // (currently works but you have to enter value each time getDealerCards 
-// is called which is tedious, maybe make global so it does it automatically otherwise);
-// player can choose balance;
-// blackjack message repeated;
-// repeats hit or stand if you enter wrong thing
+// is called which is tedious;
+// repeats hit or stand if you enter wrong thing;
+// shows Ace if 1s and if 11s in equals;
 
 // data and functions
 int playerBalance = 100;
@@ -80,7 +79,7 @@ void dealerHit(){
 void playerBet(){
     cout << "\nEnter bet: " << endl;
     cin >> bet;
-    if (bet > 0 && bet < playerBalance){
+    if (bet > 0 && bet <= playerBalance){
         playerBalance -= bet;
     }
 }
@@ -90,98 +89,91 @@ void clearHands(){
     playerHand.erase(playerHand.begin(), playerHand.end());
 }
 
-int playerAces(){
-    int aceCheck;
-    while (aceCheck != 1 && aceCheck != 11){
-        cout << "\nAce equals 1 or 11:" << endl;
-        cin >> aceCheck;
-        if (aceCheck == 1){
-            return 1;
-        }
-        else if (aceCheck == 11){
-            return 11;
-        }
-    }
-    return 1;
-}
-
 int getDealerCards(){
     int dealerHandValue = 0;
-    for (int i = 0; i < dealerHand.size(); i++){
-        dealerHandValue += cards[dealerHand.at(i)];
+    int numberOfAces = 0;
+    for (string card: dealerHand){
+        dealerHandValue += cards[card];
+        if (cards[card] == 1){
+            numberOfAces++;
+        }
+    }
+
+    if (numberOfAces > 0 && dealerHandValue + 10 <= 21){
+        dealerHandValue += 10;
     }
     return dealerHandValue;
 }
 
 int getPlayerCards(){
     int playerHandValue = 0;
-    for (int i = 0; i < playerHand.size(); i++){
-        if (cards[playerHand.at(i)] == 1){
-            playerHandValue += playerAces();
+    int numberOfAces = 0;
+    for (string card: playerHand){
+        playerHandValue += cards[card];
+        if (cards[card] == 1){
+            numberOfAces++;
         }
-        else {
-            playerHandValue += cards[playerHand.at(i)];
-        }
+    }
+
+    if (numberOfAces > 0 && playerHandValue + 10 <= 21){
+        playerHandValue += 10;
     }
     return playerHandValue;
 }
 
-void printInfo(){
+void printInfo(bool flip = true){
+    int playerAcesValue = 0;
     cout << "\n";
     cout << "Dealer: " << endl;
-    for (int i = 0; i < dealerHand.size() - 1; i++){
-        cout << dealerHand.at(i) << " ";
+    if (flip == false){
+        for (int i = 0; i < dealerHand.size() - 1; i++){
+            cout << dealerHand.at(i) << " ";
+        }
+        cout << "***";
     }
-    cout << "***";
+    else {
+        for (string card: dealerHand){
+            cout << card << " ";
+        }
+        cout << "= ";
+        cout << getDealerCards();
+    }
     cout << "\n";
     cout << "Player: " << endl;
-    for (int i = 0; i < playerHand.size(); i++){
-        cout << playerHand.at(i) << " ";
+    for (string card: playerHand){
+        cout << card << " ";
+    }
+    for (string card: playerHand){
+        playerAcesValue += cards[card];
     }
     cout << "= ";
-    cout << getPlayerCards();
-    cout << "\n";
-}
-
-void printInfoFlip(){
-    cout << "\n";
-    cout << "Dealer: " << endl;
-    for (int i = 0; i < dealerHand.size(); i++){
-        cout << dealerHand.at(i) << " ";
+    if (getPlayerCards() != playerAcesValue){
+    cout << playerAcesValue;
+    cout << " or ";
     }
-    cout << "= ";
-    cout << getDealerCards();
-    cout << "\n";
-    cout << "Player: " << endl;
-    for (int i = 0; i < playerHand.size(); i++){
-        cout << playerHand.at(i) << " ";
-    }
-    cout << "= ";
     cout << getPlayerCards();
     cout << "\n";
 }
 
 void dealerAI(){
     if (getDealerCards() > 17){
-        printInfoFlip();
+        printInfo();
     }
     while (getDealerCards() < 17){
         dealerHit();
-        printInfoFlip();
+        printInfo();
+        sleep_for(1s);
     }
 }
 
 int checkBlackjack(){
     if (getDealerCards() == 21 && getPlayerCards() == 21){
-        cout << "Both Blackjack!";
         return 2;
     }
     else if (getDealerCards() == 21){
-        cout << "Dealer Blackjack!";
         return 1;
     }
     else if (getPlayerCards() == 21){
-        cout << "Player Blackjack!";
         return 0;
     }
     else{
@@ -192,10 +184,16 @@ int checkBlackjack(){
 void checkWin(){
     if ((getDealerCards() < getPlayerCards() && getPlayerCards() <= 21) || getDealerCards() > 21){
         cout << "\nPlayer wins!";
+        if (getPlayerCards() == 21){
+            cout << " Player has Blackjack!";
+        }
         playerBalance += 2 * bet; 
     }
     else if ((getDealerCards() > getPlayerCards() && getDealerCards() <= 21) || getPlayerCards() > 21){
         cout << "\nDealer wins!";
+        if (getDealerCards() == 21){
+            cout << " Dealer has Blackjack!";
+        }
     }
     else if (getDealerCards() == getPlayerCards()){
         cout << "\nTie game!";
@@ -217,14 +215,14 @@ bool checkPlayerBust(){
 
 // mainline
 int main(){
-    while (playCheck.compare("N")!=0){
+    while (playCheck.compare("N")!=0 && playCheck.compare("n")!=0){
         cout << "Welcome to Blackjack! Bets are doubled on win! Good luck!" << endl;
         if (playCheck.compare("")==0){
             shuffle();
         }
         playerBet();
         deal();
-        printInfo();
+        printInfo(false);
         if (checkBlackjack() == 1 || checkBlackjack() == 0){
             check = "end";
         }
@@ -238,7 +236,7 @@ int main(){
             else if (check.compare("hit")==0){
                 playerHit();
                 sleep_for(1s);
-                printInfo();
+                printInfo(false);
                 if (checkPlayerBust() == true || checkBlackjack() == 0){
                     check = "end";
                     break;
@@ -252,25 +250,32 @@ int main(){
             }
         }
 
-        if (checkPlayerBust() == false){
+        if (checkPlayerBust() == false || checkBlackjack() == 0 || 
+            checkBlackjack() == 1 || checkBlackjack() == 2){
             checkBlackjack();
             sleep_for(1s);
-            printInfoFlip();
+            printInfo();
             sleep_for(1s);
             dealerAI();
             checkBlackjack();
         }
         else{
-            printInfoFlip();
+            printInfo();
         }
         checkWin();
         cout << "\nPlayer balance: ";
         cout << playerBalance;
-        cout << "\nPlay again? (Y/N):" << endl;
-        cin >> playCheck;
-        clearHands();
-        check = "";
-        sleep_for(1s);
+        if (playerBalance > 0){
+            cout << "\nPlay again? (Y/N):" << endl;
+            cin >> playCheck;
+            clearHands();
+            check = "";
+            sleep_for(1s);
+        }
+        else{
+            cout << "You're broke! Game over!";
+            playCheck = "N";
+        }
     }
     endLoop:
         cout << "\n";

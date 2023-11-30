@@ -267,7 +267,7 @@ int main(){
             sleep_for(1s);
         }
         else{
-            cout << "You're broke! Game over!";
+            cout << "\nYou're broke! Game over!";
             playCheck = "N";
         }
     }

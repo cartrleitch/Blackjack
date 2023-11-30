@@ -15,7 +15,8 @@ using namespace std::this_thread;
 
 // data and functions
 int playerBalance = 100;
-int bet;
+int bet = 0;
+int minBet = 5;
 string check = "";
 string playCheck = "";
 stack<string> shuffledDeck;
@@ -73,10 +74,15 @@ void dealerHit(){
 }
 
 void playerBet(){
-    cout << "\nEnter bet: " << endl;
-    cin >> bet;
-    if (bet > 0 && bet <= playerBalance){
-        playerBalance -= bet;
+    while (bet > playerBalance || bet < minBet){
+        cout << "\nPlayer balance: ";
+        cout << playerBalance << endl;
+        cout << "\nEnter bet: " << endl;
+        cin >> bet;
+        if (bet <= playerBalance && bet >= minBet){
+            playerBalance -= bet;
+            break;
+        }
     }
 }
 
@@ -250,6 +256,7 @@ int main(){
             cin >> playCheck;
             clearHands();
             check = "";
+            bet = 0;
             sleep_for(1s);
         }
         else{

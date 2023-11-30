@@ -11,7 +11,7 @@
 using namespace std;
 using namespace std::this_thread;
 
-// todo: repeats hit or stand if you enter wrong thing;
+//todo: allow split and double bets;
 
 // data and functions
 int playerBalance = 100;
@@ -74,11 +74,17 @@ void dealerHit(){
 }
 
 void playerBet(){
+    int number;
     while (bet > playerBalance || bet < minBet){
-        cout << "\nPlayer balance: ";
-        cout << playerBalance << endl;
+        cout << "\nPlayer balance: $" << playerBalance << endl;
         cout << "\nEnter bet: " << endl;
-        cin >> bet;
+        // ensures numeric input
+        while (!(cin >> number)){
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            cout << "\nEnter bet (must be a number): " << endl;
+        }
+        bet = number;
         if (bet <= playerBalance && bet >= minBet){
             playerBalance -= bet;
             break;
@@ -109,8 +115,7 @@ int getCards(vector<string> hand){
 
 void printInfo(bool flip = true){
     int playerAcesValue = 0;
-    cout << "\n";
-    cout << "Dealer: " << endl;
+    cout << "\nDealer: " << endl;
     if (flip == false){
         for (int i = 0; i < dealerHand.size() - 1; i++){
             cout << dealerHand.at(i) << " ";
@@ -121,24 +126,23 @@ void printInfo(bool flip = true){
         for (string card: dealerHand){
             cout << card << " ";
         }
-        cout << "= ";
-        cout << getCards(dealerHand);
+        cout << "= " << getCards(dealerHand);
     }
-    cout << "\n";
-    cout << "Player: " << endl;
+
+    cout << "\nPlayer: " << endl;
+
     for (string card: playerHand){
         cout << card << " ";
     }
     for (string card: playerHand){
         playerAcesValue += cards[card];
     }
+
     cout << "= ";
     if (getCards(playerHand) != playerAcesValue){
-    cout << playerAcesValue;
-    cout << " or ";
+        cout << playerAcesValue << " or ";
     }
-    cout << getCards(playerHand);
-    cout << "\n";
+    cout << getCards(playerHand) << endl;
 }
 
 void dealerAI(){

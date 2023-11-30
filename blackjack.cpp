@@ -11,11 +11,7 @@
 using namespace std;
 using namespace std::this_thread;
 
-// todo: Ace can be 1 or 11 (automate choice to some extent) 
-// (currently works but you have to enter value each time getDealerCards 
-// is called which is tedious;
-// repeats hit or stand if you enter wrong thing;
-// shows Ace if 1s and if 11s in equals;
+// todo: repeats hit or stand if you enter wrong thing;
 
 // data and functions
 int playerBalance = 100;
@@ -89,36 +85,20 @@ void clearHands(){
     playerHand.erase(playerHand.begin(), playerHand.end());
 }
 
-int getDealerCards(){
-    int dealerHandValue = 0;
+int getCards(vector<string> hand){
+    int handValue = 0;
     int numberOfAces = 0;
-    for (string card: dealerHand){
-        dealerHandValue += cards[card];
+    for (string card: hand){
+        handValue += cards[card];
         if (cards[card] == 1){
             numberOfAces++;
         }
     }
 
-    if (numberOfAces > 0 && dealerHandValue + 10 <= 21){
-        dealerHandValue += 10;
+    if (numberOfAces > 0 && handValue + 10 <= 21){
+        handValue += 10;
     }
-    return dealerHandValue;
-}
-
-int getPlayerCards(){
-    int playerHandValue = 0;
-    int numberOfAces = 0;
-    for (string card: playerHand){
-        playerHandValue += cards[card];
-        if (cards[card] == 1){
-            numberOfAces++;
-        }
-    }
-
-    if (numberOfAces > 0 && playerHandValue + 10 <= 21){
-        playerHandValue += 10;
-    }
-    return playerHandValue;
+    return handValue;
 }
 
 void printInfo(bool flip = true){
@@ -136,7 +116,7 @@ void printInfo(bool flip = true){
             cout << card << " ";
         }
         cout << "= ";
-        cout << getDealerCards();
+        cout << getCards(dealerHand);
     }
     cout << "\n";
     cout << "Player: " << endl;
@@ -147,19 +127,19 @@ void printInfo(bool flip = true){
         playerAcesValue += cards[card];
     }
     cout << "= ";
-    if (getPlayerCards() != playerAcesValue){
+    if (getCards(playerHand) != playerAcesValue){
     cout << playerAcesValue;
     cout << " or ";
     }
-    cout << getPlayerCards();
+    cout << getCards(playerHand);
     cout << "\n";
 }
 
 void dealerAI(){
-    if (getDealerCards() > 17){
+    if (getCards(dealerHand) > 17){
         printInfo();
     }
-    while (getDealerCards() < 17){
+    while (getCards(dealerHand) < 17){
         dealerHit();
         printInfo();
         sleep_for(1s);
@@ -167,13 +147,13 @@ void dealerAI(){
 }
 
 int checkBlackjack(){
-    if (getDealerCards() == 21 && getPlayerCards() == 21){
+    if (getCards(dealerHand) == 21 && getCards(playerHand) == 21){
         return 2;
     }
-    else if (getDealerCards() == 21){
+    else if (getCards(dealerHand) == 21){
         return 1;
     }
-    else if (getPlayerCards() == 21){
+    else if (getCards(playerHand) == 21){
         return 0;
     }
     else{
@@ -182,20 +162,20 @@ int checkBlackjack(){
 }
 
 void checkWin(){
-    if ((getDealerCards() < getPlayerCards() && getPlayerCards() <= 21) || getDealerCards() > 21){
+    if ((getCards(dealerHand) < getCards(playerHand) && getCards(playerHand) <= 21) || getCards(dealerHand) > 21){
         cout << "\nPlayer wins!";
-        if (getPlayerCards() == 21){
+        if (getCards(playerHand) == 21){
             cout << " Player has Blackjack!";
         }
         playerBalance += 2 * bet; 
     }
-    else if ((getDealerCards() > getPlayerCards() && getDealerCards() <= 21) || getPlayerCards() > 21){
+    else if ((getCards(dealerHand) > getCards(playerHand) && getCards(dealerHand) <= 21) || getCards(playerHand) > 21){
         cout << "\nDealer wins!";
-        if (getDealerCards() == 21){
+        if (getCards(dealerHand) == 21){
             cout << " Dealer has Blackjack!";
         }
     }
-    else if (getDealerCards() == getPlayerCards()){
+    else if (getCards(dealerHand) == getCards(playerHand)){
         cout << "\nTie game!";
         playerBalance += bet;
     }
@@ -205,7 +185,7 @@ void checkWin(){
 }
 
 bool checkPlayerBust(){
-    if (getPlayerCards() > 21){
+    if (getCards(playerHand) > 21){
         return true;
     }
     else{
@@ -263,7 +243,7 @@ int main(){
             printInfo();
         }
         checkWin();
-        cout << "\nPlayer balance: ";
+        cout << "\nPlayer balance: $";
         cout << playerBalance;
         if (playerBalance > 0){
             cout << "\nPlay again? (Y/N):" << endl;

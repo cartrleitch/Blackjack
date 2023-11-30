@@ -12,6 +12,9 @@ using namespace std;
 using namespace std::this_thread;
 
 //todo: allow split and double bets;
+// maybe track game stats and show 
+// when lost like most money, highest bet, 
+// highest win and lost, things like that;
 
 // data and functions
 int playerBalance = 100;
@@ -270,5 +273,6 @@ int main(){
     }
     endLoop:
         cout << "\n";
+    system("pause");
     return 0;
 }

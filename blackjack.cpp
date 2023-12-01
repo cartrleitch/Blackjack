@@ -11,33 +11,29 @@
 using namespace std;
 using namespace std::this_thread;
 
-//todo: allow split and double bets;
+//todo: allow split and double bets and insurance;
 // add optional cheat mode to show probabilities to suggest moves,
 // this needs to be based on probabilities for the entire deck
 // minus known cards, so it is not counting cards and considering
 // real values left in the deck;
 // maybe make player objects for multiplayer;
 // add visual components;
-// win more on blackjacks;
-// dealer can't hit when player blackjack;
-
-// stats :
-// number of rounds, number of blackjacks, highest balance, win percentage, biggest win, biggest loss
-
+// win more on blackjacks 1.5x;
 // data and functions
-int playerBalance = 100;
-int bet = 0;
+
+double playerBalance = 100.000;
+double bet = 0.00;
 int minBet = 5;
 int numRounds = 0;
 int numBlackjacks = 0;
-int highestBalance = playerBalance;
+float highestBalance = playerBalance;
 float wins = 0;
 float losses = 0;
 float winPercentage = 0;
-int biggestWin = 0;
-int biggestLoss = 0;
-vector <int> highestBalanceList;
-vector <int> wlAmounts;
+float biggestWin = 0;
+float biggestLoss = 0;
+vector <float> highestBalanceList;
+vector <float> wlAmounts;
 string check = "";
 string playCheck = "";
 stack<string> shuffledDeck;
@@ -95,9 +91,9 @@ void dealerHit(){
 }
 
 void playerBet(){
-    int number;
+    float number;
     while (bet > playerBalance || bet < minBet){
-        cout << "\nPlayer balance: $" << playerBalance << endl;
+        printf("\nPlayer balance: $%.2f\n", playerBalance);
         cout << "\nEnter bet: " << endl;
         // ensures numeric input
         while (!(cin >> number)){
@@ -106,6 +102,7 @@ void playerBet(){
             cout << "\nEnter bet (must be a number): " << endl;
         }
         bet = number;
+
         if (bet <= playerBalance && bet >= minBet){
             playerBalance -= bet;
             break;
@@ -124,6 +121,7 @@ int getCards(vector<string> hand){
     int numberOfAces = 0;
     for (string card: hand){
         handValue += cards[card];
+
         if (cards[card] == 1){
             numberOfAces++;
         }
@@ -138,6 +136,7 @@ int getCards(vector<string> hand){
 void printInfo(bool flip = true){
     int playerAcesValue = 0;
     cout << "\nDealer: " << endl;
+
     if (flip == false){
         for (int i = 0; i < dealerHand.size() - 1; i++){
             cout << dealerHand.at(i) << " ";
@@ -156,11 +155,13 @@ void printInfo(bool flip = true){
     for (string card: playerHand){
         cout << card << " ";
     }
+
     for (string card: playerHand){
         playerAcesValue += cards[card];
     }
 
     cout << "= ";
+
     if (getCards(playerHand) != playerAcesValue){
         cout << playerAcesValue << " or ";
     }
@@ -196,19 +197,27 @@ int checkBlackjack(){
 void checkWin(){
     if ((getCards(dealerHand) < getCards(playerHand) && getCards(playerHand) <= 21) || getCards(dealerHand) > 21){
         cout << "\nPlayer wins!";
+
         if (getCards(playerHand) == 21){
             cout << " Player has Blackjack!";
+            playerBalance += 2.5 * bet; 
+            wlAmounts.push_back(2.5 * bet);
             numBlackjacks++;
         }
-        playerBalance += 2 * bet; 
-        wlAmounts.push_back(2*bet);
+        else{
+            playerBalance += 2 * bet; 
+            wlAmounts.push_back(2*bet);
+        }
+
         wins++;
     }
     else if ((getCards(dealerHand) > getCards(playerHand) && getCards(dealerHand) <= 21) || getCards(playerHand) > 21){
         cout << "\nDealer wins!";
+        
         if (getCards(dealerHand) == 21){
             cout << " Dealer has Blackjack!";
         }
+
         wlAmounts.push_back(-bet);
         losses++;
     }
@@ -251,26 +260,30 @@ void playerStats(){
     cout << "\nPlayer stats: " << endl;
     cout << "Rounds played: " << numRounds << endl;
     cout << "Blackjacks: " << numBlackjacks << endl;
-    cout << "Highest balance: $" << highestBalance << endl;
+    printf("Highest balance: $%.2f\n", highestBalance);
     cout << "Wins: " << wins << endl;
     cout << "Losses: " << losses << endl;
     cout << "Win percentage: " << winPercentage << "%" << endl;
-    cout << "Biggest win: $" << biggestWin << endl;
-    cout << "Biggest loss: $" << abs(biggestLoss) << endl;
+    printf("Biggest win: $%.2f\n",biggestWin);
+    printf("Biggest loss: $%.2f\n",abs(biggestLoss));
 }
 
 // mainline
 int main(){
     highestBalanceList.push_back(playerBalance);
+
     while (playCheck.compare("N")!=0 && playCheck.compare("n")!=0){
-        cout << "Welcome to Blackjack! Bets are doubled on win! Good luck!" << endl;
+        cout << "Welcome to Blackjack! Bets are doubled on win!\nBlackjack 3:2 payout! $5 minimum bet! Good luck!" << endl;
         numRounds++;
+
         if (playCheck.compare("")==0){
             shuffle();
         }
+
         playerBet();
         deal();
         printInfo(false);
+
         if (checkBlackjack() == 1 || checkBlackjack() == 0){
             check = "end";
         }
@@ -278,6 +291,7 @@ int main(){
         while (check.compare("end")!=0){
             cout << "Hit (hit) or Stand (stand) or End (end):" << endl;
             cin >> check;
+
             if (check.compare("end")==0){
                 goto endLoop;
             }
@@ -285,6 +299,7 @@ int main(){
                 playerHit();
                 sleep_for(1s);
                 printInfo(false);
+
                 if (checkPlayerBust() == true || checkBlackjack() == 0){
                     check = "end";
                     break;
@@ -293,6 +308,7 @@ int main(){
             else if(check.compare("stand")==0){
                 break;
             }
+
             if (check.compare("end")!=0){
                 check = "";
             }
@@ -311,9 +327,9 @@ int main(){
             printInfo();
         }
         checkWin();
-        cout << "\nPlayer balance: $";
-        cout << playerBalance;
+        printf("\nPlayer balance: $%.2f", playerBalance);
         highestBalanceList.push_back(playerBalance);
+
         if (playerBalance > 0){
             cout << "\nPlay again? (Y/N):" << endl;
             cin >> playCheck;

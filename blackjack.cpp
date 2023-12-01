@@ -271,6 +271,7 @@ void playerStats(){
 
 // mainline
 int main(){
+    system("color 20");
     highestBalanceList.push_back(playerBalance);
 
     while (playCheck.compare("N")!=0 && playCheck.compare("n")!=0){

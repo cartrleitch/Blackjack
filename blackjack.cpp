@@ -12,15 +12,14 @@ using namespace std;
 using namespace std::this_thread;
 
 //todo: allow split and double bets;
-// maybe track game stats and show 
-// when lost like most money, highest bet, 
-// highest win and lost, things like that;
 // add optional cheat mode to show probabilities to suggest moves,
 // this needs to be based on probabilities for the entire deck
 // minus known cards, so it is not counting cards and considering
 // real values left in the deck;
 // maybe make player objects for multiplayer;
 // add visual components;
+// win more on blackjacks;
+// dealer can't hit when player blackjack;
 
 // stats :
 // number of rounds, number of blackjacks, highest balance, win percentage, biggest win, biggest loss
@@ -112,6 +111,7 @@ void playerBet(){
             break;
         }
     }
+    sleep_for(1s);
 }
 
 void clearHands(){
@@ -234,9 +234,20 @@ void playerStats(){
     if (wins + losses > 0){
         winPercentage = 100*(wins/(wins + losses));
     }
-    highestBalance = *max_element(highestBalanceList.begin(), highestBalanceList.end());
-    biggestWin = *max_element(wlAmounts.begin(), wlAmounts.end());
-    biggestLoss = abs(*min_element(wlAmounts.begin(), wlAmounts.end()));
+    if (!highestBalanceList.empty()){
+        highestBalance = *max_element(highestBalanceList.begin(), highestBalanceList.end());
+    }
+
+    if (!wlAmounts.empty()){
+        biggestWin = *max_element(wlAmounts.begin(), wlAmounts.end());
+        biggestLoss = *min_element(wlAmounts.begin(), wlAmounts.end());
+    }
+    if (biggestWin < 0){
+        biggestWin = 0;
+    }
+    if (biggestLoss > 0){
+        biggestLoss = 0;
+    }
     cout << "\nPlayer stats: " << endl;
     cout << "Rounds played: " << numRounds << endl;
     cout << "Blackjacks: " << numBlackjacks << endl;
@@ -245,7 +256,7 @@ void playerStats(){
     cout << "Losses: " << losses << endl;
     cout << "Win percentage: " << winPercentage << "%" << endl;
     cout << "Biggest win: $" << biggestWin << endl;
-    cout << "Biggest loss: $" << biggestLoss << endl;
+    cout << "Biggest loss: $" << abs(biggestLoss) << endl;
 }
 
 // mainline
@@ -286,8 +297,8 @@ int main(){
             }
         }
 
-        if (checkPlayerBust() == false || checkBlackjack() == 0 || 
-            checkBlackjack() == 1 || checkBlackjack() == 2){
+        if (checkPlayerBust() == false && checkBlackjack() != 0 && 
+            checkBlackjack() != 1 && checkBlackjack() != 2){
             checkBlackjack();
             sleep_for(1s);
             printInfo();

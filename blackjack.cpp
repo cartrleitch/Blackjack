@@ -261,6 +261,7 @@ void playerStats(){
 
 // mainline
 int main(){
+    highestBalanceList.push_back(playerBalance);
     while (playCheck.compare("N")!=0 && playCheck.compare("n")!=0){
         cout << "Welcome to Blackjack! Bets are doubled on win! Good luck!" << endl;
         numRounds++;

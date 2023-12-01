@@ -15,11 +15,30 @@ using namespace std::this_thread;
 // maybe track game stats and show 
 // when lost like most money, highest bet, 
 // highest win and lost, things like that;
+// add optional cheat mode to show probabilities to suggest moves,
+// this needs to be based on probabilities for the entire deck
+// minus known cards, so it is not counting cards and considering
+// real values left in the deck;
+// maybe make player objects for multiplayer;
+// add visual components;
+
+// stats :
+// number of rounds, number of blackjacks, highest balance, win percentage, biggest win, biggest loss
 
 // data and functions
 int playerBalance = 100;
 int bet = 0;
 int minBet = 5;
+int numRounds = 0;
+int numBlackjacks = 0;
+int highestBalance = playerBalance;
+float wins = 0;
+float losses = 0;
+float winPercentage = 0;
+int biggestWin = 0;
+int biggestLoss = 0;
+vector <int> highestBalanceList;
+vector <int> wlAmounts;
 string check = "";
 string playCheck = "";
 stack<string> shuffledDeck;
@@ -179,14 +198,19 @@ void checkWin(){
         cout << "\nPlayer wins!";
         if (getCards(playerHand) == 21){
             cout << " Player has Blackjack!";
+            numBlackjacks++;
         }
         playerBalance += 2 * bet; 
+        wlAmounts.push_back(2*bet);
+        wins++;
     }
     else if ((getCards(dealerHand) > getCards(playerHand) && getCards(dealerHand) <= 21) || getCards(playerHand) > 21){
         cout << "\nDealer wins!";
         if (getCards(dealerHand) == 21){
             cout << " Dealer has Blackjack!";
         }
+        wlAmounts.push_back(-bet);
+        losses++;
     }
     else if (getCards(dealerHand) == getCards(playerHand)){
         cout << "\nTie game!";
@@ -206,10 +230,29 @@ bool checkPlayerBust(){
     }
 }
 
+void playerStats(){
+    if (wins + losses > 0){
+        winPercentage = 100*(wins/(wins + losses));
+    }
+    highestBalance = *max_element(highestBalanceList.begin(), highestBalanceList.end());
+    biggestWin = *max_element(wlAmounts.begin(), wlAmounts.end());
+    biggestLoss = abs(*min_element(wlAmounts.begin(), wlAmounts.end()));
+    cout << "\nPlayer stats: " << endl;
+    cout << "Rounds played: " << numRounds << endl;
+    cout << "Blackjacks: " << numBlackjacks << endl;
+    cout << "Highest balance: $" << highestBalance << endl;
+    cout << "Wins: " << wins << endl;
+    cout << "Losses: " << losses << endl;
+    cout << "Win percentage: " << winPercentage << "%" << endl;
+    cout << "Biggest win: $" << biggestWin << endl;
+    cout << "Biggest loss: $" << biggestLoss << endl;
+}
+
 // mainline
 int main(){
     while (playCheck.compare("N")!=0 && playCheck.compare("n")!=0){
         cout << "Welcome to Blackjack! Bets are doubled on win! Good luck!" << endl;
+        numRounds++;
         if (playCheck.compare("")==0){
             shuffle();
         }
@@ -258,6 +301,7 @@ int main(){
         checkWin();
         cout << "\nPlayer balance: $";
         cout << playerBalance;
+        highestBalanceList.push_back(playerBalance);
         if (playerBalance > 0){
             cout << "\nPlay again? (Y/N):" << endl;
             cin >> playCheck;
@@ -273,6 +317,7 @@ int main(){
     }
     endLoop:
         cout << "\n";
+    playerStats();
     system("pause");
     return 0;
 }

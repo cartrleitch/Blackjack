@@ -278,7 +278,7 @@ int main(){
         cout << "Welcome to Blackjack! Bets are doubled on win!\nBlackjack 3:2 payout! $5 minimum bet! Good luck!" << endl;
         numRounds++;
 
-        if (playCheck.compare("")==0){
+        if (playCheck.compare("")==0 || shuffledDeck.size() <= 10){
             shuffle();
         }
 

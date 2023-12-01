@@ -8,17 +8,18 @@
 #include <ctime>
 #include <chrono>
 #include <thread>
+#include <bits/stdc++.h>
 using namespace std;
 using namespace std::this_thread;
 
 //todo: allow split and double bets and insurance;
 // add optional cheat mode to show probabilities to suggest moves,
 // this needs to be based on probabilities for the entire deck
-// minus known cards, so it is not counting cards and considering
+// minus known cards, so it is not counting cards and consideringdf
 // real values left in the deck;
 // maybe make player objects for multiplayer;
 // add visual components;
-// win more on blackjacks 1.5x;
+
 // data and functions
 
 double playerBalance = 100.000;
@@ -291,11 +292,11 @@ int main(){
         while (check.compare("end")!=0){
             cout << "Hit (hit) or Stand (stand) or End (end):" << endl;
             cin >> check;
-
+            transform(check.begin(), check.end(), check.begin(), ::tolower);
             if (check.compare("end")==0){
                 goto endLoop;
             }
-            else if (check.compare("hit")==0){
+            else if (check.compare("hit")==0 || check.compare("h")==0){
                 playerHit();
                 sleep_for(1s);
                 printInfo(false);
@@ -305,7 +306,7 @@ int main(){
                     break;
                 }
             }
-            else if(check.compare("stand")==0){
+            else if(check.compare("stand")==0 || check.compare("s")==0){
                 break;
             }
 

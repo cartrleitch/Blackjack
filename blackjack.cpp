@@ -172,6 +172,7 @@ void printInfo(bool flip = true){
 void dealerAI(){
     if (getCards(dealerHand) > 17){
         printInfo();
+        sleep_for(1s);
     }
     while (getCards(dealerHand) < 17){
         dealerHit();

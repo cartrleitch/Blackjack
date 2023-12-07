@@ -12,7 +12,7 @@
 using namespace std;
 using namespace std::this_thread;
 
-//todo: allow split and double bets and insurance;
+//todo: allow split bets and insurance;
 // add optional cheat mode to show probabilities to suggest moves,
 // this needs to be based on probabilities for the entire deck
 // minus known cards, so it is not counting cards and consideringdf
@@ -292,11 +292,26 @@ int main(){
         }
 
         while (check.compare("end")!=0){
-            cout << "Hit (hit) or Stand (stand) or End (end):" << endl;
+            if (numRounds == 1){
+                cout << "Hit or Stand or Double or End:" << endl;
+            }
+            else{
+                cout << "Hit or Stand or End:" << endl;
+            }
             cin >> check;
             transform(check.begin(), check.end(), check.begin(), ::tolower);
             if (check.compare("end")==0){
                 goto endLoop;
+            }
+            else if(numRounds == 1 && check.compare("double")==0 || check.compare("d")==0){
+                playerBalance -= bet;
+                sleep_for(1s);
+                printf("\nDoubling your bet!\nPlayer balance: $%.2f", playerBalance);
+                bet *= 2;
+                playerHit();
+                sleep_for(1s);
+                printInfo(false);
+                break;
             }
             else if (check.compare("hit")==0 || check.compare("h")==0){
                 playerHit();

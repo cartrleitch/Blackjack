@@ -292,7 +292,7 @@ int main(){
         }
 
         while (check.compare("end")!=0){
-            if (numRounds == 1){
+            if (playerHand.size() == 2){
                 cout << "Hit or Stand or Double or End:" << endl;
             }
             else{
@@ -303,7 +303,7 @@ int main(){
             if (check.compare("end")==0){
                 goto endLoop;
             }
-            else if(numRounds == 1 && check.compare("double")==0 || check.compare("d")==0){
+            else if(playerHand.size() == 2 && check.compare("double")==0 || check.compare("d")==0){
                 playerBalance -= bet;
                 sleep_for(1s);
                 printf("\nDoubling your bet!\nPlayer balance: $%.2f", playerBalance);

@@ -304,14 +304,20 @@ int main(){
                 goto endLoop;
             }
             else if(playerHand.size() == 2 && check.compare("double")==0 || check.compare("d")==0){
-                playerBalance -= bet;
-                sleep_for(1s);
-                printf("\nDoubling your bet!\nPlayer balance: $%.2f", playerBalance);
-                bet *= 2;
-                playerHit();
-                sleep_for(1s);
-                printInfo(false);
-                break;
+                if (playerBalance - bet >= 0){
+                    playerBalance -= bet;
+                    sleep_for(1s);
+                    printf("\nDoubling your bet!\nPlayer balance: $%.2f", playerBalance);
+                    bet *= 2;
+                    playerHit();
+                    sleep_for(1s);
+                    printInfo(false);
+                    break;
+                }
+                else{
+                    cout << "\nCannot double bet! Balance is too low!" << endl;
+                }
+
             }
             else if (check.compare("hit")==0 || check.compare("h")==0){
                 playerHit();

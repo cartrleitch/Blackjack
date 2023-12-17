@@ -21,10 +21,11 @@ using namespace std::this_thread;
 // add visual components;
 
 // Split:
-// split info make it so you can select to show split as well as another parameter (delete split info function);
 // make all stat tracking work when split;
-// make sure it checks wins for both hands on split and blackjacks on both;
 // minimize code duplication;
+// make sure aces work, make sure check blackjack and check bust work for both hands;
+// no bonus when you split blackjack, make suure splitting blackjack works; 
+// make sure non-split gameplay works;
 
 // data and functions
 
@@ -73,10 +74,12 @@ int random (int i){
 
 void shuffle(){
     random_shuffle(&deck[0], &deck[52], random);
-
     for (int i = 0; i < 52; i++){
         shuffledDeck.push(deck[i]);
     }
+    shuffledDeck.push(deck[10]);
+    shuffledDeck.push(deck[1]);
+    shuffledDeck.push(deck[10]);
 }
 
 void deal(){
@@ -106,7 +109,7 @@ void dealerHit(){
 }
 
 void playerSplit(){
-    splitHand.push_back(playerHand.at(1));
+    splitHand.push_back(playerHand.at(0));
     playerHand.pop_back();
 }
 
@@ -152,56 +155,10 @@ int getCards(vector<string> hand){
     }
     return handValue;
 }
-void printSplitInfo(){
+
+void printInfo(bool flip = true, bool showSplit = false){
     int playerAcesValue = 0;
     int playerSplitAcesValue = 0;
-
-    cout << "\nDealer: " << endl;
-
-    for (int i = 0; i < dealerHand.size() - 1; i++){
-        cout << dealerHand.at(i) << " ";
-    }
-    cout << "***";
-
-    cout << "\nPlayer Hand 1: " << endl;
-
-    for (string card: playerHand){
-        cout << card << " ";
-    }
-
-    for (string card: playerHand){
-        playerAcesValue += cards[card];
-    }
-
-    cout << "= ";
-
-    if (getCards(playerHand) != playerAcesValue){
-        cout << playerAcesValue << " or ";
-    }
-    cout << getCards(playerHand) << endl;
-
-    cout << "\nPlayer Hand 2: " << endl;
-
-    for (string card: splitHand){
-        cout << card << " ";
-    }
-
-    playerAcesValue = 0;
-
-    for (string card: splitHand){
-        playerAcesValue += cards[card];
-    }
-
-    cout << "= ";
-
-    if (getCards(splitHand) != playerSplitAcesValue){
-        cout << playerSplitAcesValue << " or ";
-    }
-    cout << getCards(splitHand) << endl;
-}
-
-void printInfo(bool flip = true){
-    int playerAcesValue = 0;
     cout << "\nDealer: " << endl;
 
     if (flip == false){
@@ -217,7 +174,12 @@ void printInfo(bool flip = true){
         cout << "= " << getCards(dealerHand);
     }
 
-    cout << "\nPlayer: " << endl;
+    if (showSplit == true){
+        cout << "\nPlayer Hand 1: " << endl;
+    }
+    else {
+        cout << "\nPlayer: " << endl;
+    }
 
     for (string card: playerHand){
         cout << card << " ";
@@ -233,16 +195,44 @@ void printInfo(bool flip = true){
         cout << playerAcesValue << " or ";
     }
     cout << getCards(playerHand) << endl;
+
+    // print split hand if split
+    if (showSplit == true){
+        cout << "Player Hand 2: " << endl;
+        for (string card: splitHand){
+            cout << card << " ";
+        }
+        for (string card: splitHand){
+            playerSplitAcesValue += cards[card];
+        }
+
+        cout << "= ";
+
+        if (getCards(splitHand) != playerSplitAcesValue){
+            cout << playerSplitAcesValue << " or ";
+        }
+        cout << getCards(splitHand) << endl;
+    }
 }
 
-void dealerAI(){
+void dealerAI(bool showSplit = false){
     if (getCards(dealerHand) > 17){
-        printInfo();
+        if (showSplit == false){
+            printInfo();
+        }
+        else{
+            printInfo(true, true);
+        }
         sleep_for(1s);
     }
     while (getCards(dealerHand) < 17){
         dealerHit();
-        printInfo();
+        if (showSplit == false){
+            printInfo();
+        }
+        else{
+            printInfo(true, true);
+        }        
         sleep_for(1s);
     }
 }
@@ -335,13 +325,16 @@ void playerStats(){
     printf("Biggest win: $%.2f\n",biggestWin);
     printf("Biggest loss: $%.2f\n",abs(biggestLoss));
 }
-void hitCheck(vector<string> hand){
-    playerHit();
-    sleep_for(1s);
-    printInfo(false);
-
-    if (checkPlayerBust(hand) == true || checkBlackjack(hand) == 0){
-        break;
+void hitCheck(bool split = false){
+    if (split == false){
+        playerHit();
+        sleep_for(1s);
+        printInfo(false);
+    }
+    else if (split == true){
+        splitHit();
+        sleep_for(1s);
+        printInfo(false, true);
     }
 }
 
@@ -367,11 +360,11 @@ int main(){
         }
 
         while (check.compare("end")!=0){
-            if (playerHand.size() == 2){
-                cout << "Hit or Stand or Double or End:" << endl;
-            }
-            else if (playerHand.size() == 2 && cards[playerHand.at(0)] == cards[playerHand.at(1)]){
+            if (playerHand.size() == 2 && ((playerHand.at(0).substr(0, 1)) == (playerHand.at(1).substr(0, 1)))){
                 cout << "Hit or Stand or Double or Split or End:" << endl;
+            }
+            else if (playerHand.size() == 2){
+                cout << "Hit or Stand or Double or End:" << endl;
             }
             else{
                 cout << "Hit or Stand or End:" << endl;
@@ -384,20 +377,24 @@ int main(){
                 goto endLoop;
             }
             else if (check.compare("hit")==0 || check.compare("h")==0){
-                hitCheck(playerHand);
+                hitCheck();
+                if (checkPlayerBust(playerHand) == true || checkBlackjack(playerHand) == 0){
+                    break;
+                }
             }
-            else if(playerHandsize() == 2 && cards[playerHand.at(0)] == cards[playerHand.at(1)]
+            else if(playerHand.size()==2 && ((playerHand.at(0).substr(0, 1)) == (playerHand.at(1).substr(0, 1)))
                     && check.compare("split")==0 || check.compare("sp")==0){
                 
                 playerSplit();
                 hasSplit = true;
                 sleep_for(1s);
-                printf("\nSplitting!\nPlayer balance: $%.2f", playerBalance);
-                bet *= 2;
+                printf("\nSplitting!\n\nPlayer balance: $%.2f\n", playerBalance);
                 playerBalance -= bet;
-                printSplitInfo();
+                bet *= 2;
+                printInfo(false, true);
                 sleep_for(1s);
 
+                // handles hit or stand for Hand 1 (playerHand)
                 while (splitCheck.compare("end")!=0){
                     cout << "\nHand 1: Hit or Stand or End:" << endl;
                     cin >> splitCheck;
@@ -407,13 +404,19 @@ int main(){
                         goto endLoop;
                     }
                     else if (splitCheck.compare("hit")==0 || splitCheck.compare("h")==0){
-                        hitCheck(splitHand);
+                        hitCheck();
+                        printInfo(false, true);
+                        if (checkPlayerBust(playerHand) == true || checkBlackjack(playerHand) == 0){
+                            break;
+                        }
                     }
                     else if(splitCheck.compare("stand")==0 || splitCheck.compare("s")==0){
                         break;
                     }
                 }
                 splitCheck = "";
+                printInfo(false, true);
+                // handles hit or stand for Hand 2 (splitHand)
                 while (splitCheck.compare("end")!=0){
                     cout << "\nHand 2: Hit or Stand or End:" << endl;
                     cin >> splitCheck;
@@ -423,17 +426,17 @@ int main(){
                         goto endLoop;
                     }
                     else if (splitCheck.compare("hit")==0 || splitCheck.compare("h")==0){
-                        hitCheck(playerHand);
+                        hitCheck(true);
+                        printInfo(false, true);
+                        if (checkPlayerBust(splitHand) == true || checkBlackjack(splitHand) == 0){
+                            break;
+                        }
                     }
                     else if(splitCheck.compare("stand")==0 || splitCheck.compare("s")==0){
                         break;
                     }
                 }
                 splitCheck = "";
-
-
-
-
                 break;
             }
             else if(check.compare("stand")==0 || check.compare("s")==0){
@@ -475,19 +478,19 @@ int main(){
         else if (hasSplit == true){
             checkBlackjack(playerHand);
             sleep_for(1s);
-            printInfo();
+            printInfo(true, true);
             sleep_for(1s);
-            dealerAI();
+            dealerAI(true);
             checkBlackjack(playerHand);
-            cout << "\nHand 1: " << endl;
+            cout << "\nHand 1: ";
             checkWin(playerHand);
-            cout << "\nHand 2: " << endl;
+            cout << "\nHand 2: ";
             checkWin(splitHand);
         }
         else{
             printInfo();
         }
-        printf("\nPlayer balance: $%.2f", playerBalance);
+        printf("\n\nPlayer balance: $%.2f", playerBalance);
         highestBalanceList.push_back(playerBalance);
 
         if (playerBalance > 0){

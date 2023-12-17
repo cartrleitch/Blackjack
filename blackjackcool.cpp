@@ -12,7 +12,7 @@
 using namespace std;
 using namespace std::this_thread;
 
-//todo: allow split bets and insurance;
+//todo: allow insurance;
 // add optional cheat mode to show probabilities to suggest moves,
 // this needs to be based on probabilities for the entire deck
 // minus known cards, so it is not counting cards and considering;
@@ -21,16 +21,9 @@ using namespace std::this_thread;
 // add visual components;
 
 // Split:
-// make all stat tracking work when split;
-// minimize code duplication;
-// make sure aces work, make sure check blackjack and check bust work for both hands;
-// no bonus when you split blackjack, make suure splitting blackjack works; 
-// make sure non-split gameplay works;
-// make sure bets work, you mess with the bet amount all over the place during split,
-// so make sure it is accurate;
+// no bonus when you split blackjack, make sure splitting blackjack works; 
 
 // data and functions
-
 double playerBalance = 100.000;
 double bet = 0.00;
 int minBet = 5;
@@ -362,10 +355,14 @@ int main(){
         }
 
         while (check.compare("end")!=0){
-            if (playerHand.size() == 2 && ((playerHand.at(0).substr(0, 1)) == (playerHand.at(1).substr(0, 1)))){
+            if (playerHand.size() == 2 && getCards(playerHand) >= 9 && getCards(playerHand) <= 11 && ((playerHand.at(0).substr(0, 1)) == (playerHand.at(1).substr(0, 1)))){
                 cout << "Hit or Stand or Double or Split or End:" << endl;
             }
-            else if (playerHand.size() == 2){
+            else if (playerHand.size() == 2 && ((playerHand.at(0).substr(0, 1)) == (playerHand.at(1).substr(0, 1)))){
+                cout << "Hit or Stand or Split or End:" << endl;
+
+            }
+            else if (playerHand.size() == 2 && getCards(playerHand) >= 9 && getCards(playerHand) <= 11){
                 cout << "Hit or Stand or Double or End:" << endl;
             }
             else{
@@ -443,7 +440,7 @@ int main(){
             else if(check.compare("stand")==0 || check.compare("s")==0){
                 break;
             }
-            else if(playerHand.size() == 2 && check.compare("double")==0 || check.compare("d")==0){
+            else if(playerHand.size() == 2 && getCards(playerHand) >= 9 && getCards(playerHand) <= 11 && check.compare("double")==0 || check.compare("d")==0){
                 if (playerBalance - bet >= 0){
                     playerBalance -= bet;
                     sleep_for(1s);
@@ -457,9 +454,6 @@ int main(){
                 else{
                     cout << "\nCannot double bet! Balance is too low!" << endl;
                 }
-            }
-            else{
-                cout << "\nInvalid input!" << endl;
             }
             if (check.compare("end")!=0){
                 check = "";

@@ -26,6 +26,8 @@ using namespace std::this_thread;
 // make sure aces work, make sure check blackjack and check bust work for both hands;
 // no bonus when you split blackjack, make suure splitting blackjack works; 
 // make sure non-split gameplay works;
+// make sure bets work, you mess with the bet amount all over the place during split,
+// so make sure it is accurate;
 
 // data and functions
 
@@ -253,7 +255,7 @@ int checkBlackjack(vector<string> phand){
 }
 
 void checkWin(vector<string> phand){
-    if ((getCards(dealerHand) < getCards(phand) && getCards(phand) <= 21) || getCards(dealerHand) > 21){
+    if (((getCards(dealerHand) < getCards(phand) && getCards(phand) <= 21)) || (getCards(dealerHand) > 21 && getCards(phand) <= 21)){
         cout << "\nPlayer wins!";
 
         if (getCards(phand) == 21){
@@ -390,7 +392,6 @@ int main(){
                 sleep_for(1s);
                 printf("\nSplitting!\n\nPlayer balance: $%.2f\n", playerBalance);
                 playerBalance -= bet;
-                bet *= 2;
                 printInfo(false, true);
                 sleep_for(1s);
 

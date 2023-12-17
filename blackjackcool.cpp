@@ -22,7 +22,9 @@ using namespace std::this_thread;
 
 // Split:
 // no bonus when you split blackjack, make sure splitting blackjack works; 
-
+// With a pair of aces, the player is given one card for each ace and may not draw again. 
+// Also, if a ten-card is dealt to one of these aces, the payoff is equal to the bet (not one and one-half to one, as with a blackjack at any other time).
+ 
 // data and functions
 double playerBalance = 100.000;
 double bet = 0.00;
